@@ -1,25 +1,40 @@
-class Solution {
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int val;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode() : val(0), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}
+ *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
+ * };
+ */
+ class Solution {
 public:
-    bool isMatch(string s, string p) {
-    vector<vector<int>> dp(s.length()+1,vector<int>(p.length()+1,0));
-        dp[s.length()][p.length()]=1;
+    // Serialize subtrees and check for duplicates using a post-order traversal
+    string serializeSubtrees(TreeNode* node, unordered_map<string, int>& subtrees, vector<TreeNode*>& duplicates) {
+        if (!node) return "#"; // Null nodes are represented by '#'
         
-        for(int i=s.length();i>=0;i--)
-        {
-            for(int j=p.length()-1;j>=0;j--)
-            {
-                bool first_match=(i<s.length() && (p[j]==s[i]|| p[j]=='.'));
-                    if(j+1<p.length() && p[j+1]=='*')
-                    {
-                        dp[i][j]=dp[i][j+2] || (first_match && dp[i+1][j]);
-                    }
-                else
-                {
-                    dp[i][j]=first_match && dp[i+1][j+1];
-                }
-            }
-        }
+        string left = serializeSubtrees(node->left, subtrees, duplicates);
+        string right = serializeSubtrees(node->right, subtrees, duplicates);
         
-    return dp[0][0];
+        string s = left + "," + right + "," + to_string(node->val); // Serialize the current subtree
+        
+        if (subtrees[s] == 1) duplicates.push_back(node); // If a duplicate subtree is found, add to the vector
+        
+        subtrees[s]++;
+        return s;
     }
+ vector<TreeNode*> findDuplicateSubtrees(TreeNode* root) {
+        unordered_map<string, int> subtrees; // Store serialized subtree and its frequency
+        vector<TreeNode*> duplicates; // Store duplicate subtrees
+        
+        serializeSubtrees(root, subtrees, duplicates); // Traverse the tree and serialize subtrees
+        
+        return duplicates;
+    }
+    
 };
+
+
+//👇PLEASE UPVOTE IF YOU LIKED MY APPROACH
